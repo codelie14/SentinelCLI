@@ -1,4 +1,4 @@
-# SentinelCLI - Cyber Defense Terminal Toolkit
+# SentinelCLI v1.2 - Cyber Defense Terminal Toolkit
 # Dependencies for Python 3.10+
 
 # System monitoring
@@ -15,3 +15,14 @@ prompt_toolkit>=3.0.20
 
 # ASCII art
 pyfiglet>=0.7.5
+
+# ── v1.2 NEW DEPENDENCIES ──────────────────────────────────────────
+
+# Online features (VirusTotal, OTX, Geo-Intel, Cloud Backup, Webhooks)
+requests>=2.31.0
+
+# REST API (local server for SIEM/SOC integration)
+flask>=3.0.0
+
+# Report encryption (offline AES-256 encryption)
+cryptography>=41.0.0

@@ -1,0 +1,35 @@
+{
+  "mode": "online",
+  "api_keys": {
+    "virustotal": "5c3d360abb04eec44b7b1ce25364ab2219a3d51016ba659570c80a7afa95ef32",
+    "otx": "d071ac63845a3e15eeefaceddc1d9919ddacccbda53746d95c86148050e2df7a"
+  },
+  "notifications": {
+    "slack_webhook": "",
+    "discord_webhook": "",
+    "smtp_host": "",
+    "smtp_port": 587,
+    "smtp_user": "",
+    "smtp_password": "",
+    "email_to": ""
+  },
+  "rest_api": {
+    "host": "127.0.0.1",
+    "port": 5000,
+    "enabled": false
+  },
+  "cloud_backup": {
+    "endpoint_url": "",
+    "enabled": false
+  },
+  "geo_intel": {
+    "high_risk_countries": [
+      "CN",
+      "RU",
+      "KP",
+      "IR",
+      "SY"
+    ]
+  },
+  "notifications_threshold": "HIGH"
+}

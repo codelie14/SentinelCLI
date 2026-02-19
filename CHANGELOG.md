@@ -1,3 +1,41 @@
+## [v1.2.0] — 2026-02-19
+
+### Added — Offline Features
+
+- `baseline create/compare` — Process/port/user/task drift detection
+- `filescan [path]` — MD5/SHA256 + suspicious extension/hidden file detection
+- `audit` — Windows scheduled tasks, registry Run keys, network shares
+- `timeline [hours|start|stop|clear]` — Background forensic event recorder
+- `snapshot take|list|diff|delete` — Point-in-time system snapshots
+- `export --encrypt` — AES-256 PBKDF2 password-protected reports
+
+### Added — Online Features (mode online)
+
+- `vtcheck [hash]` — VirusTotal API v3, checks 70+ AV engines
+- `intel fetch|scan` — AlienVault OTX pulses + active connection IOC scan
+- `geoip [ip]` — ip-api.com geolocation + high-risk country flagging
+- `notify test|<level> <msg>` — Slack, Discord, SMTP alerts
+- `api start|stop` — Flask REST API: /status /threats /processes /ports /connections
+- `backup [filepath]` — HTTP cloud upload, auto-upload all reports
+
+### Added — Mode & Config System
+
+- `mode offline|online` — live switch, prompt updates
+- `config show|set|get` — persisted to `sentinel_config.json`
+- Auto-notify on HIGH/CRITICAL threat if online mode active
+
+### Structure
+
+- `commands/` package: `config_commands.py`, `offline_commands.py`, `online_commands.py`
+- `engine/online/` package: `virustotal.py`, `threat_intel.py`, `geo_intel.py`, `notifier.py`, `rest_api.py`, `cloud_backup.py`
+- New `config.py` top-level singleton
+
+### Dependencies
+
+- `requests>=2.31.0`, `flask>=3.0.0`, `cryptography>=41.0.0`
+
+---
+
 # 📊 Summary of Changes - SentinelCLI v1.1
 
 **Date:** February 19, 2026  
@@ -14,36 +52,36 @@ Enhance and strengthen SentinelCLI with advanced security features, comprehensiv
 
 ## 📦 New Modules (4)
 
-| Module | File | Features |
-|--------|------|----------|
-| **Anomaly Detector** | `engine/anomaly_detector.py` | Process, network, and resource anomalies |
-| **Advanced Port Scanner** | `engine/advanced_port_scanner.py` | 50+ port database, risk analysis, categorization |
-| **Vulnerability Assessment** | `engine/vulnerability_assessment.py` | CVE detection, vulnerability scanning |
-| **Alert System** | `engine/alert_system.py` | Real-time alerts, structured logging, event tracking |
+| Module                       | File                                 | Features                                             |
+| ---------------------------- | ------------------------------------ | ---------------------------------------------------- |
+| **Anomaly Detector**         | `engine/anomaly_detector.py`         | Process, network, and resource anomalies             |
+| **Advanced Port Scanner**    | `engine/advanced_port_scanner.py`    | 50+ port database, risk analysis, categorization     |
+| **Vulnerability Assessment** | `engine/vulnerability_assessment.py` | CVE detection, vulnerability scanning                |
+| **Alert System**             | `engine/alert_system.py`             | Real-time alerts, structured logging, event tracking |
 
 ---
 
 ## 🔧 Enhanced Modules (1)
 
-| Module | File | Improvements |
-|--------|------|--------------|
+| Module               | File                          | Improvements                                                                  |
+| -------------------- | ----------------------------- | ----------------------------------------------------------------------------- |
 | **Report Generator** | `modules/report_generator.py` | Detailed tables, vulnerability sections, anomaly reports, multi-format export |
 
 ---
 
 ## 📄 New Documentation (2)
 
-| Document | Purpose |
-|----------|---------|
-| **ENHANCEMENTS.md** | Detailed changelog of all new features |
-| **ENHANCEMENT_SUMMARY.md** | This file - Quick overview |
+| Document                   | Purpose                                |
+| -------------------------- | -------------------------------------- |
+| **ENHANCEMENTS.md**        | Detailed changelog of all new features |
+| **ENHANCEMENT_SUMMARY.md** | This file - Quick overview             |
 
 ---
 
 ## 🆕 New Demo Script
 
-| Script | Features Demonstrated |
-|--------|----------------------|
+| Script               | Features Demonstrated                                                       |
+| -------------------- | --------------------------------------------------------------------------- |
 | **demo_enhanced.py** | All advanced features: anomalies, vulnerabilities, alerts, detailed reports |
 
 ---
@@ -51,12 +89,14 @@ Enhance and strengthen SentinelCLI with advanced security features, comprehensiv
 ## 💻 Architecture Improvements
 
 ### Before (v1.0)
+
 - 3 engine modules
 - 3 application modules
 - Basic threat detection
 - Simple logging
 
 ### After (v1.1)
+
 - **7 engine modules** (+4 new)
 - **3 application modules** (1 enhanced)
 - **13+ threat types detected** (vs 6)
@@ -71,6 +111,7 @@ Enhance and strengthen SentinelCLI with advanced security features, comprehensiv
 ## 📈 Feature Additions
 
 ### 1. Anomaly Detection (NEW)
+
 ```python
 from engine import AnomalyDetector
 
@@ -81,6 +122,7 @@ resource_anomalies = ad.detect_resource_anomalies(cpu, memory, disk)
 ```
 
 **Detects:**
+
 - 10+ malware-related keywords in processes
 - Unnamed processes (potential rootkit)
 - Excessive connections (DDoS indicator)
@@ -88,6 +130,7 @@ resource_anomalies = ad.detect_resource_anomalies(cpu, memory, disk)
 - Resource usage anomalies
 
 ### 2. Advanced Port Analysis (NEW)
+
 ```python
 from engine import AdvancedPortScanner
 
@@ -97,12 +140,14 @@ anomalies = aps.detect_port_anomalies(ports)
 ```
 
 **Features:**
+
 - 50+ port database with service details
 - Risk categorization (CRITICAL, HIGH, MEDIUM, LOW)
 - Service-based recommendations
 - Port change tracking
 
 ### 3. Vulnerability Assessment (NEW)
+
 ```python
 from engine import VulnerabilityAssessment
 
@@ -112,6 +157,7 @@ mitigation = va.get_mitigation_steps(vulnerabilities)
 ```
 
 **Covers:**
+
 - BlueKeep (CVE-2019-0708)
 - EternalBlue (CVE-2017-0144)
 - SMB vulnerabilities
@@ -119,6 +165,7 @@ mitigation = va.get_mitigation_steps(vulnerabilities)
 - Print Spooler RCE
 
 ### 4. Alert System (NEW)
+
 ```python
 from engine import AdvancedLogger, AlertSystem
 
@@ -130,12 +177,14 @@ threat_alerts = alert_sys.check_security_threats(threat_count)
 ```
 
 **Includes:**
+
 - System health monitoring
 - Threshold-based alerts
 - Structured event logging
 - Alert statistics and history
 
 ### 5. Enhanced Reporting
+
 ```python
 # Now includes:
 rg.generate_markdown_report(..., vulnerabilities=vuln_data, anomalies=anom_data)
@@ -144,6 +193,7 @@ rg.export_csv_ports(open_ports)
 ```
 
 **Report Sections:**
+
 - Executive Summary
 - System Information
 - Security Assessment
@@ -157,21 +207,23 @@ rg.export_csv_ports(open_ports)
 ## 📊 Statistics
 
 ### Detection Capabilities
-| Category | Before | After | Improvement |
-|----------|--------|-------|-------------|
-| Threat Types | 6 | 13+ | +116% |
-| Port Database | 13 | 50+ | +284% |
-| Malware Patterns | 5 | 10+ | +100% |
-| Known CVEs | 0 | 4+ | ∞ |
-| Logging Granularity | 3 | 8+ | +166% |
+
+| Category            | Before | After | Improvement |
+| ------------------- | ------ | ----- | ----------- |
+| Threat Types        | 6      | 13+   | +116%       |
+| Port Database       | 13     | 50+   | +284%       |
+| Malware Patterns    | 5      | 10+   | +100%       |
+| Known CVEs          | 0      | 4+    | ∞           |
+| Logging Granularity | 3      | 8+    | +166%       |
 
 ### Code Statistics
-| Metric | Value |
-|--------|-------|
-| New Lines of Code | +2,500 |
-| New Functions | +45 |
-| New Classes | +4 |
-| New Test Scripts | +1 |
+
+| Metric             | Value   |
+| ------------------ | ------- |
+| New Lines of Code  | +2,500  |
+| New Functions      | +45     |
+| New Classes        | +4      |
+| New Test Scripts   | +1      |
 | Performance Impact | <2% CPU |
 
 ---
@@ -179,6 +231,7 @@ rg.export_csv_ports(open_ports)
 ## 🧪 Testing Summary
 
 ✅ **All Tests Passed**
+
 - Module imports: ✓
 - Anomaly detection: ✓
 - Port analysis: ✓
@@ -189,6 +242,7 @@ rg.export_csv_ports(open_ports)
 - Data export: ✓
 
 ✅ **Demo Execution**
+
 - `python demo.py` - Original demo works
 - `python demo_enhanced.py` - New enhanced demo works
 - All reports generated successfully
@@ -199,6 +253,7 @@ rg.export_csv_ports(open_ports)
 ## 🚀 Usage Quick Reference
 
 ### Running Advanced Analysis
+
 ```bash
 # Original interactive mode (still available)
 python sentinel.py
@@ -211,6 +266,7 @@ python demo_enhanced.py
 ```
 
 ### Generated Files
+
 ```
 reports/
   ├── SentinelCLI_Report_*.md          (Basic report)
@@ -259,24 +315,28 @@ logs/
 ## 💡 Key Improvements
 
 ### Depth
+
 - Analysis now covers **7 different security areas** (up from 3)
 - **50+ services** identified in port analysis
 - **10+ vulnerability patterns** checked
 - **4+ attack pattern** types detected
 
 ### Intelligence
+
 - Smart **anomaly detection** learns suspicious patterns
 - **CVE mapping** links ports to known exploits
 - **Service categorization** for risk assessment
 - **Threat correlation** for better ranking
 
 ### Usability
+
 - **Detailed recommendations** for each threat
 - **Multi-format reports** (Markdown, JSON, CSV)
 - **Structured logs** for automated processing
 - **Alert system** for critical issues
 
 ### Professionalismality
+
 - Enterprise-grade **vulnerability scanning**
 - **Audit trail** for compliance
 - **Structured data** for integration
@@ -287,12 +347,14 @@ logs/
 ## 📋 Backward Compatibility
 
 ✅ **All original features preserved**
+
 - `python sentinel.py` - Still works
 - All original commands - Still available
 - Original report format - Still generated
 - Original logging - Still in place
 
 ✅ **New features are additive**
+
 - No breaking changes
 - Enhancements don't affect existing functionality
 - Fully backward compatible
@@ -311,13 +373,13 @@ logs/
 
 ## 🏆 Quality Metrics
 
-| Metric | Status |
-|--------|--------|
-| Code Quality | ✅ High (Clean, documented) |
-| Testing | ✅ Complete (All modules tested) |
-| Documentation | ✅ Comprehensive |
-| Performance | ✅ Minimal overhead (<2% CPU) |
-| Reliability | ✅ Stable (No known issues) |
+| Metric        | Status                             |
+| ------------- | ---------------------------------- |
+| Code Quality  | ✅ High (Clean, documented)        |
+| Testing       | ✅ Complete (All modules tested)   |
+| Documentation | ✅ Comprehensive                   |
+| Performance   | ✅ Minimal overhead (<2% CPU)      |
+| Reliability   | ✅ Stable (No known issues)        |
 | Functionality | ✅ Complete (All features working) |
 
 ---
@@ -335,18 +397,21 @@ logs/
 ## 🎯 Next Steps
 
 ### Immediate
+
 1. Review `ENHANCEMENTS.md` for detailed features
 2. Run `python demo_enhanced.py` to see all features
 3. Explore generated reports in `reports/` folder
 4. Check logs in `logs/` folder
 
 ### Short Term
+
 1. Integrate new alert system into workflows
 2. Use detailed reports for security decisions
 3. Monitor vulnerability assessments
 4. Track anomaly patterns
 
 ### Future (v1.2+)
+
 1. Machine learning for anomaly detection
 2. Multi-system monitoring
 3. Web dashboard
@@ -358,6 +423,7 @@ logs/
 ## 📞 Support
 
 For issues or questions:
+
 1. Check documentation files
 2. Review demo scripts
 3. Examine generated reports
