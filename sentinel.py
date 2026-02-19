@@ -93,7 +93,7 @@ class SentinelCLI:
         while True:
             try:
                 # Get user input
-                user_input = session.prompt('[sentinel]> ', style='bold green')
+                user_input = session.prompt('[sentinel]> ')
                 user_input = user_input.strip()
                 
                 if not user_input:
