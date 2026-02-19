@@ -1,0 +1,17 @@
+# SentinelCLI - Cyber Defense Terminal Toolkit
+# Dependencies for Python 3.10+
+
+# System monitoring
+psutil>=5.9.0
+
+# Network analysis
+scapy>=2.4.5
+
+# Terminal UI and formatting
+rich>=12.0.0
+
+# Interactive shell
+prompt_toolkit>=3.0.20
+
+# ASCII art
+pyfiglet>=0.7.5
