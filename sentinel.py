@@ -22,7 +22,7 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.completion import WordCompleter
 
 # Local imports
-from engine import SystemMonitor, NetworkMonitor, ThreatEngine
+from engine import SystemMonitor, NetworkMonitor, ThreatEngine, AnomalyDetector, VulnerabilityAssessment
 from modules import NetworkScanner, ProcessAnalyzer, ReportGenerator
 
 
@@ -37,6 +37,8 @@ class SentinelCLI:
         self.network_scanner = NetworkScanner()
         self.process_analyzer = ProcessAnalyzer()
         self.report_generator = ReportGenerator()
+        self.anomaly_detector = AnomalyDetector()
+        self.vulnerability_assessment = VulnerabilityAssessment()
         
         # Create history file
         os.makedirs('logs', exist_ok=True)
@@ -393,15 +395,63 @@ class SentinelCLI:
         sys_info = self.system_monitor.get_system_info()
         cpu_info = self.system_monitor.get_cpu_info()
         mem_info = self.system_monitor.get_memory_info()
+        disk_info = self.system_monitor.get_disk_info()
+        processes = self.system_monitor.get_processes()
         net_ports = self.network_monitor.get_open_ports()
-        net_connections = self.network_monitor.get_suspicious_connections()
+        net_connections = self.network_monitor.get_connections()
+        suspicious_conn = self.network_monitor.get_suspicious_connections()
         
         # Combine system data
-        system_data = {**sys_info, **cpu_info, **mem_info}
-        network_data = {**net_ports, **net_connections}
+        system_data = {**sys_info, **cpu_info, **mem_info, **disk_info}
+        network_data = {**net_ports, **{'connections': net_connections.get('connections', [])}, **suspicious_conn}
         
         # Calculate threats
         threat_analysis = self.threat_engine.calculate_security_score(system_data, network_data)
+        
+        # Run advanced analysis modules
+        process_list = processes.get('processes', [])
+        
+        # Anomaly Detection
+        process_anomalies = self.anomaly_detector.detect_process_anomalies(process_list)
+        network_anomalies = self.anomaly_detector.detect_network_anomalies(
+            network_data.get('connections', [])
+        )
+        resource_anomalies = self.anomaly_detector.detect_resource_anomalies(
+            cpu_info.get('cpu_percent', 0),
+            mem_info.get('ram_percent', 0),
+            list(disk_info.get('disks', {}).values())[0].get('percent', 0) if disk_info.get('disks') else 0
+        )
+        
+        # Add risk_score to network_anomalies if missing
+        if 'risk_score' not in network_anomalies:
+            network_anomalies['risk_score'] = len(network_anomalies.get('network_anomalies', [])) * 20
+        
+        # Add risk_score to resource_anomalies if missing
+        if 'risk_score' not in resource_anomalies:
+            resource_anomalies['risk_score'] = len(resource_anomalies.get('resource_anomalies', [])) * 10
+        
+        # Combine all anomalies
+        all_anomalies = (
+            process_anomalies.get('anomalies_detected', []) +
+            network_anomalies.get('network_anomalies', []) +
+            resource_anomalies.get('resource_anomalies', [])
+        )
+        
+        anomalies = {
+            'anomalies_detected': all_anomalies,
+            'count': len(all_anomalies),
+            'risk_score': max(
+                process_anomalies.get('risk_score', 0),
+                network_anomalies.get('risk_score', 0),
+                resource_anomalies.get('risk_score', 0)
+            ),
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        # Vulnerability Assessment
+        vulnerabilities = self.vulnerability_assessment.scan_vulnerabilities(
+            system_data, net_ports.get('open_ports', {}), process_list
+        )
         
         # Display results with color coding
         score = threat_analysis.get('security_score', 0)
@@ -466,7 +516,9 @@ class SentinelCLI:
         self.last_scan_data = {
             'system': system_data,
             'network': network_data,
-            'threats': threat_analysis
+            'threats': threat_analysis,
+            'anomalies': anomalies,
+            'vulnerabilities': vulnerabilities
         }
     
     def _cmd_processes(self, args):
@@ -558,13 +610,21 @@ class SentinelCLI:
         system_data = self.last_scan_data.get('system', {})
         network_data = self.last_scan_data.get('network', {})
         threat_analysis = self.last_scan_data.get('threats', {})
+        anomalies = self.last_scan_data.get('anomalies', {})
+        vulnerabilities = self.last_scan_data.get('vulnerabilities', {})
         
         recommendations = self.threat_engine.generate_recommendations(threat_analysis)
         
         # Generate report
         filename = f"SentinelCLI_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
         filepath = self.report_generator.generate_markdown_report(
-            system_data, network_data, threat_analysis, recommendations, filename
+            system_data=system_data,
+            network_data=network_data,
+            threat_analysis=threat_analysis,
+            recommendations=recommendations,
+            vulnerabilities=vulnerabilities,
+            anomalies=anomalies,
+            filename=filename
         )
         
         self.console.print(f"[green]✓ Report generated: {filepath}[/green]\n")
