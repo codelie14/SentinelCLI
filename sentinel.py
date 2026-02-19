@@ -8,6 +8,7 @@ import sys
 import os
 from datetime import datetime
 from typing import Dict, Any, List
+import time
 
 # Rich for terminal formatting
 from rich.console import Console
@@ -15,6 +16,8 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.syntax import Syntax
 from rich import print as rprint
+from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, track
+from rich.live import Live
 
 # Prompt toolkit for interactive shell
 from prompt_toolkit import PromptSession
@@ -84,6 +87,32 @@ class SentinelCLI:
         
         self.console.print(banner, style="cyan bold")
     
+    def animate_operation(self, operation_name: str, duration: float = 1.0):
+        """Animated operation with spinner"""
+        with Progress(
+            SpinnerColumn(style="cyan"),
+            TextColumn("[bold cyan]{task.description}"),
+            transient=True
+        ) as progress:
+            task = progress.add_task(operation_name, total=None)
+            time.sleep(duration)
+            progress.stop_task(task)
+    
+    def animate_progress(self, operation_name: str, steps: int = 10):
+        """Animated progress bar"""
+        with Progress(
+            SpinnerColumn(style="green"),
+            BarColumn(bar_width=20),
+            TextColumn("[bold green]{task.percentage:>3.0f}%"),
+            TextColumn("•"),
+            TextColumn("[bold green]{task.description}"),
+            transient=True
+        ) as progress:
+            task = progress.add_task(operation_name, total=steps)
+            for _ in range(steps):
+                time.sleep(0.1)
+                progress.update(task, advance=1)
+    
     def run(self):
         """Start the interactive shell"""
         
@@ -122,6 +151,8 @@ class SentinelCLI:
     
     def _cmd_sysinfo(self, args):
         """Display system information"""
+        
+        self.animate_operation("[cyan]⚙️  Gathering system information...", 0.8)
         
         self.console.print("[bold cyan]═══════════════════════════════════════[/bold cyan]")
         self.console.print("[bold cyan]       SYSTEM INFORMATION[/bold cyan]")
@@ -217,6 +248,8 @@ class SentinelCLI:
     def _cmd_startup(self, args):
         """Display startup processes"""
         
+        self.animate_progress("[cyan]📊 Scanning processes...", 8)
+        
         self.console.print("[bold cyan]Top Resource-Consuming Processes[/bold cyan]\n")
         
         processes = self.system_monitor.get_processes(limit=20)
@@ -243,7 +276,8 @@ class SentinelCLI:
     def _cmd_scan(self, args):
         """Scan local network for active hosts"""
         
-        self.console.print("[bold cyan]Scanning network...[/bold cyan]\n")
+        self.animate_progress("[cyan]🔍 Scanning network...", 10)
+        self.console.print()
         
         subnet = args if args else None
         scan_result = self.network_scanner.scan_network(subnet)
@@ -273,7 +307,7 @@ class SentinelCLI:
     def _cmd_ports(self, args):
         """Display open ports and listening services"""
         
-        self.console.print("[bold cyan]Scanning for open ports...[/bold cyan]\n")
+        self.animate_operation("[cyan]🔌 Scanning for open ports...", 1.2)
         
         ports_data = self.network_monitor.get_open_ports()
         open_ports = ports_data.get('open_ports', {})
@@ -302,7 +336,7 @@ class SentinelCLI:
     def _cmd_connections(self, args):
         """Display active network connections"""
         
-        self.console.print("[bold cyan]Analyzing network connections...[/bold cyan]\n")
+        self.animate_operation("[cyan]📡 Analyzing network connections...", 1.0)
         
         connections = self.network_monitor.get_connections()
         
@@ -389,17 +423,40 @@ class SentinelCLI:
     def _cmd_threats(self, args):
         """Analyze threats and compute security score"""
         
-        self.console.print("[bold cyan]Analyzing security threats...[/bold cyan]\n")
-        
-        # Gather all data
-        sys_info = self.system_monitor.get_system_info()
-        cpu_info = self.system_monitor.get_cpu_info()
-        mem_info = self.system_monitor.get_memory_info()
-        disk_info = self.system_monitor.get_disk_info()
-        processes = self.system_monitor.get_processes()
-        net_ports = self.network_monitor.get_open_ports()
-        net_connections = self.network_monitor.get_connections()
-        suspicious_conn = self.network_monitor.get_suspicious_connections()
+        # Animated progress analysis
+        with Progress(
+            SpinnerColumn(style="red"),
+            BarColumn(bar_width=25),
+            TextColumn("[bold red]{task.percentage:>3.0f}%"),
+            TextColumn("•"),
+            TextColumn("[bold red]{task.description}"),
+            transient=False
+        ) as progress:
+            task = progress.add_task("[red]Threat Analysis", total=5)
+            
+            # Gather all data
+            progress.update(task, description="[red]1/5: Gathering system info...", advance=1)
+            time.sleep(0.2)
+            sys_info = self.system_monitor.get_system_info()
+            cpu_info = self.system_monitor.get_cpu_info()
+            mem_info = self.system_monitor.get_memory_info()
+            disk_info = self.system_monitor.get_disk_info()
+            
+            progress.update(task, description="[red]2/5: Scanning processes...", advance=1)
+            time.sleep(0.2)
+            processes = self.system_monitor.get_processes()
+            
+            progress.update(task, description="[red]3/5: Analyzing network...", advance=1)
+            time.sleep(0.2)
+            net_ports = self.network_monitor.get_open_ports()
+            net_connections = self.network_monitor.get_connections()
+            suspicious_conn = self.network_monitor.get_suspicious_connections()
+            
+            progress.update(task, description="[red]4/5: Detecting anomalies...", advance=1)
+            time.sleep(0.2)
+            
+            progress.update(task, description="[red]5/5: Calculating score...", advance=1)
+            time.sleep(0.3)
         
         # Combine system data
         system_data = {**sys_info, **cpu_info, **mem_info, **disk_info}
@@ -524,7 +581,7 @@ class SentinelCLI:
     def _cmd_processes(self, args):
         """Analyze running processes"""
         
-        self.console.print("[bold cyan]Analyzing running processes...[/bold cyan]\n")
+        self.animate_progress("[cyan]🔎 Analyzing running processes...", 6)
         
         # High resource processes
         high_res = self.process_analyzer.get_high_resource_processes()
@@ -615,19 +672,42 @@ class SentinelCLI:
         
         recommendations = self.threat_engine.generate_recommendations(threat_analysis)
         
-        # Generate report
-        filename = f"SentinelCLI_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
-        filepath = self.report_generator.generate_markdown_report(
-            system_data=system_data,
-            network_data=network_data,
-            threat_analysis=threat_analysis,
-            recommendations=recommendations,
-            vulnerabilities=vulnerabilities,
-            anomalies=anomalies,
-            filename=filename
-        )
+        # Animated report generation
+        with Progress(
+            SpinnerColumn(style="yellow"),
+            BarColumn(bar_width=20),
+            TextColumn("[bold yellow]{task.percentage:>3.0f}%"),
+            TextColumn("•"),
+            TextColumn("[bold yellow]{task.description}"),
+            transient=True
+        ) as progress:
+            task = progress.add_task("[yellow]Generating report", total=4)
+            
+            progress.update(task, description="[yellow]1/4: Collecting data...", advance=1)
+            time.sleep(0.2)
+            
+            progress.update(task, description="[yellow]2/4: Analyzing threats...", advance=1)
+            time.sleep(0.2)
+            
+            progress.update(task, description="[yellow]3/4: Formatting report...", advance=1)
+            time.sleep(0.2)
+            
+            # Generate report
+            filename = f"SentinelCLI_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+            filepath = self.report_generator.generate_markdown_report(
+                system_data=system_data,
+                network_data=network_data,
+                threat_analysis=threat_analysis,
+                recommendations=recommendations,
+                vulnerabilities=vulnerabilities,
+                anomalies=anomalies,
+                filename=filename
+            )
+            
+            progress.update(task, description="[yellow]4/4: Saving file...", advance=1)
+            time.sleep(0.2)
         
-        self.console.print(f"[green]✓ Report generated: {filepath}[/green]\n")
+        self.console.print(f"\n[green]✓ Report generated: {filepath}[/green]\n")
     
     # Utility Commands
     
