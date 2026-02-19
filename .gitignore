@@ -1,4 +1,5 @@
 venv/
+logs/
 __pycache__/
 reports/
 docs/Cahier_des_Charges.md
